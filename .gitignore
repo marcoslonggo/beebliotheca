@@ -1,0 +1,51 @@
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+backend/.mypy_cache/
+backend/.pytest_cache/
+**/*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# SSL certificates (self-signed for development)
+frontend/cert.pem
+frontend/key.pem
+
+# Database / runtime data
+backend/data/
+data/
+
+# Dev scripts and utilities
+*.ps1
+*.bat
+check_*.py
+add_*.py
+backend/check_*.py
+backend/test_*.py
+backend/tmp_*.py
+
+# Claude Code
+.claude/
+
+# Optional mockups
+frontend/src/pages/ThemeMockup.tsx
+
+# Docker publish scripts (local only)
+scripts/docker/
+
+# Ignore embedded reference repo
+refs/booklore/
+
+# Local docs
+docs/PROJECT.md

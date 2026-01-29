@@ -1,0 +1,545 @@
+import { useState } from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Stack,
+  TextField,
+  Typography,
+  IconButton,
+  Divider,
+  List,
+  ListItemButton,
+  ListItemText,
+  Chip,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  CardMedia,
+  CardActions,
+  Grid,
+  useTheme,
+  useMediaQuery,
+  Tabs,
+  Tab
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Close as CloseIcon,
+  AutoStories as SeriesIcon
+} from "@mui/icons-material";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLibrary } from "../../contexts/LibraryContext";
+import {
+  listSeries,
+  getSeriesBooks,
+  getSeriesReadingStatus,
+  createSeries,
+  updateSeries,
+  deleteSeries,
+  Series,
+  SeriesBook,
+  SeriesReadingStatus
+} from "../../api/series";
+import BookCoverPlaceholder from "../../components/BookCoverPlaceholder";
+import ConfirmDialog from "../../components/ConfirmDialog";
+
+const SeriesPage = () => {
+  const { currentLibrary } = useLibrary();
+  const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+  const [newSeriesName, setNewSeriesName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editedName, setEditedName] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+  const [editedStatus, setEditedStatus] = useState<"in_progress" | "finished">("in_progress");
+  const [seriesToDelete, setSeriesToDelete] = useState<Series | null>(null);
+  const [mobileTab, setMobileTab] = useState(0); // 0 = list, 1 = details
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const queryClient = useQueryClient();
+
+  // Query all series
+  const { data: seriesList = [], isLoading } = useQuery({
+    queryKey: ["series", currentLibrary?.id],
+    queryFn: () => (currentLibrary ? listSeries(currentLibrary.id) : Promise.resolve([])),
+    enabled: Boolean(currentLibrary),
+  });
+
+  // Query books in selected series
+  const { data: seriesBooks = [] } = useQuery({
+    queryKey: ["series", currentLibrary?.id, selectedSeries?.id, "books"],
+    queryFn: () =>
+      currentLibrary && selectedSeries
+        ? getSeriesBooks(currentLibrary.id, selectedSeries.id)
+        : Promise.resolve([]),
+    enabled: Boolean(currentLibrary && selectedSeries),
+  });
+
+  // Query reading status
+  const { data: readingStatus } = useQuery({
+    queryKey: ["series", currentLibrary?.id, selectedSeries?.id, "reading-status"],
+    queryFn: () =>
+      currentLibrary && selectedSeries
+        ? getSeriesReadingStatus(currentLibrary.id, selectedSeries.id)
+        : Promise.resolve(null),
+    enabled: Boolean(currentLibrary && selectedSeries),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (name: string) =>
+      createSeries(currentLibrary!.id, { name: name.trim() }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["series", currentLibrary!.id] });
+      setNewSeriesName("");
+      setIsCreating(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: {
+        name?: string;
+        description?: string | null;
+        publication_status?: "in_progress" | "finished";
+        cover_book_id?: string | null;
+      };
+    }) => updateSeries(currentLibrary!.id, id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["series", currentLibrary!.id] });
+      setEditMode(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteSeries(currentLibrary!.id, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["series", currentLibrary!.id] });
+      setSelectedSeries(null);
+      setSeriesToDelete(null);
+    },
+  });
+
+  const handleSeriesSelect = (series: Series) => {
+    setSelectedSeries(series);
+    setEditMode(false);
+    if (isMobile) {
+      setMobileTab(1);
+    }
+  };
+
+  const handleEdit = () => {
+    if (!selectedSeries) return;
+    setEditedName(selectedSeries.name);
+    setEditedDescription(selectedSeries.description || "");
+    setEditedStatus(selectedSeries.publication_status);
+    setEditMode(true);
+  };
+
+  const handleSave = () => {
+    if (!selectedSeries) return;
+    updateMutation.mutate({
+      id: selectedSeries.id,
+      data: {
+        name: editedName.trim(),
+        description: editedDescription.trim() || null,
+        publication_status: editedStatus,
+      },
+    });
+  };
+
+  const handleSetCover = (bookId: string) => {
+    if (!selectedSeries) return;
+    updateMutation.mutate({
+      id: selectedSeries.id,
+      data: { cover_book_id: bookId },
+    });
+  };
+
+  const getCoverUrl = (book: SeriesBook) => {
+    if (book.cover_image_path) {
+      const filename = book.cover_image_path.split(/[\\/]/).pop();
+      return `/covers/${filename}`;
+    }
+    return book.cover_image_url;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "success";
+      case "reading":
+        return "warning";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "reading":
+        return "Reading";
+      default:
+        return "Not Started";
+    }
+  };
+
+  if (!currentLibrary) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="info">
+          Please select or create a library to manage series.
+        </Alert>
+      </Box>
+    );
+  }
+
+  const renderSeriesList = () => (
+    <Stack spacing={2}>
+      {isCreating ? (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Series name"
+            value={newSeriesName}
+            onChange={(e) => setNewSeriesName(e.target.value)}
+            autoFocus
+          />
+          <Button
+            size="small"
+            variant="contained"
+            onClick={() => createMutation.mutate(newSeriesName)}
+            disabled={!newSeriesName.trim() || createMutation.isPending}
+          >
+            Add
+          </Button>
+          <IconButton size="small" onClick={() => setIsCreating(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Stack>
+      ) : (
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => setIsCreating(true)}
+          variant="outlined"
+          fullWidth
+        >
+          New Series
+        </Button>
+      )}
+
+      {isLoading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+          <CircularProgress />
+        </Box>
+      ) : seriesList.length === 0 ? (
+        <Alert severity="info">
+          No series yet. Add books with series information or create a new series.
+        </Alert>
+      ) : (
+        <List>
+          {seriesList.map((series) => (
+            <ListItemButton
+              key={series.id}
+              selected={selectedSeries?.id === series.id}
+              onClick={() => handleSeriesSelect(series)}
+              sx={{ borderRadius: 1, mb: 0.5 }}
+            >
+              <ListItemText
+                primary={series.name}
+                secondary={
+                  series.publication_status === "finished"
+                    ? "Finished"
+                    : "In Progress"
+                }
+              />
+            </ListItemButton>
+          ))}
+        </List>
+      )}
+    </Stack>
+  );
+
+  const renderSeriesDetails = () => {
+    if (!selectedSeries) {
+      return (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "text.secondary",
+          }}
+        >
+          <SeriesIcon sx={{ fontSize: 80, mb: 2, opacity: 0.3 }} />
+          <Typography>Select a series to view details</Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Stack spacing={3}>
+        {/* Header */}
+        <Stack direction="row" spacing={2} alignItems="flex-start">
+          {editMode ? (
+            <Box sx={{ flex: 1 }}>
+              <Stack spacing={2}>
+                <TextField
+                  label="Series Name"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  fullWidth
+                  size="small"
+                />
+                <TextField
+                  label="Description"
+                  value={editedDescription}
+                  onChange={(e) => setEditedDescription(e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  size="small"
+                />
+                <FormControl fullWidth size="small">
+                  <InputLabel>Publication Status</InputLabel>
+                  <Select
+                    value={editedStatus}
+                    onChange={(e) =>
+                      setEditedStatus(e.target.value as "in_progress" | "finished")
+                    }
+                    label="Publication Status"
+                  >
+                    <MenuItem value="in_progress">In Progress</MenuItem>
+                    <MenuItem value="finished">Finished</MenuItem>
+                  </Select>
+                </FormControl>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={handleSave}
+                    disabled={!editedName.trim() || updateMutation.isPending}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setEditMode(false)}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
+              </Stack>
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h5" gutterBottom>
+                  {selectedSeries.name}
+                </Typography>
+                {selectedSeries.description && (
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {selectedSeries.description}
+                  </Typography>
+                )}
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  <Chip
+                    label={
+                      selectedSeries.publication_status === "finished"
+                        ? "Finished"
+                        : "In Progress"
+                    }
+                    size="small"
+                    color={
+                      selectedSeries.publication_status === "finished"
+                        ? "success"
+                        : "default"
+                    }
+                  />
+                  {readingStatus && (
+                    <Chip
+                      label={`${getStatusLabel(readingStatus.reading_status)} (${readingStatus.read_books}/${readingStatus.total_books})`}
+                      size="small"
+                      color={getStatusColor(readingStatus.reading_status)}
+                    />
+                  )}
+                </Stack>
+              </Box>
+              <Stack direction="row" spacing={1}>
+                <IconButton size="small" onClick={handleEdit}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => setSeriesToDelete(selectedSeries)}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Stack>
+            </>
+          )}
+        </Stack>
+
+        <Divider />
+
+        {/* Books in Series */}
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            Books in Series
+          </Typography>
+
+          {seriesBooks.length === 0 ? (
+            <Alert severity="info">
+              No books in this series yet. Add books and assign them to "
+              {selectedSeries.name}" in the Books page.
+            </Alert>
+          ) : (
+            <Stack spacing={3}>
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Select Series Cover:
+                </Typography>
+                <RadioGroup
+                  value={selectedSeries.cover_book_id || ""}
+                  onChange={(e) => handleSetCover(e.target.value)}
+                >
+                  <Grid container spacing={2}>
+                    {seriesBooks.map((book) => (
+                      <Grid item xs={12} sm={6} md={4} lg={3} key={book.library_book_id}>
+                        <FormControlLabel
+                          value={book.book_id}
+                          control={<Radio />}
+                          label={
+                            <Card sx={{ width: "100%" }}>
+                              {getCoverUrl(book) ? (
+                                <CardMedia
+                                  component="img"
+                                  height="200"
+                                  image={getCoverUrl(book)!}
+                                  alt={book.title}
+                                  sx={{ objectFit: "contain", bgcolor: "grey.100" }}
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    height: 200,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <BookCoverPlaceholder
+                                    title={book.title}
+                                    width={150}
+                                    height={200}
+                                    variant="card"
+                                  />
+                                </Box>
+                              )}
+                              <CardActions
+                                sx={{
+                                  flexDirection: "column",
+                                  alignItems: "flex-start",
+                                  p: 1,
+                                }}
+                              >
+                                <Typography variant="caption" noWrap sx={{ width: "100%" }}>
+                                  {book.title}
+                                </Typography>
+                                {book.is_series_cover && (
+                                  <Chip label="Current Cover" size="small" color="primary" />
+                                )}
+                              </CardActions>
+                            </Card>
+                          }
+                          sx={{ m: 0, alignItems: "flex-start" }}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+                </RadioGroup>
+              </Box>
+            </Stack>
+          )}
+        </Box>
+      </Stack>
+    );
+  };
+
+  return (
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Card>
+        <CardContent>
+          <Typography variant="h4" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <SeriesIcon /> Series
+          </Typography>
+
+          {isMobile ? (
+            <>
+              <Tabs value={mobileTab} onChange={(_, v) => setMobileTab(v)} sx={{ mb: 2 }}>
+                <Tab label="Series List" />
+                <Tab label="Details" disabled={!selectedSeries} />
+              </Tabs>
+
+              {mobileTab === 0 ? renderSeriesList() : renderSeriesDetails()}
+            </>
+          ) : (
+            <Stack direction="row" spacing={3} sx={{ minHeight: 500 }}>
+              {/* Left panel - Series list */}
+              <Box
+                sx={{
+                  width: 300,
+                  borderRight: 1,
+                  borderColor: "divider",
+                  pr: 3,
+                  overflow: "auto",
+                }}
+              >
+                {renderSeriesList()}
+              </Box>
+
+              {/* Right panel - Series details */}
+              <Box sx={{ flex: 1, overflow: "auto" }}>
+                {renderSeriesDetails()}
+              </Box>
+            </Stack>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={Boolean(seriesToDelete)}
+        title="Delete Series"
+        message={`Are you sure you want to delete "${seriesToDelete?.name}"? Books in this series will not be deleted, but the series grouping will be removed.`}
+        onConfirm={() => seriesToDelete && deleteMutation.mutate(seriesToDelete.id)}
+        onCancel={() => setSeriesToDelete(null)}
+        confirmText="Delete"
+        confirmColor="error"
+      />
+    </Box>
+  );
+};
+
+export default SeriesPage;

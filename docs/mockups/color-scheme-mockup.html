@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library App - New Color Scheme Mockup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #C47B7B; /* Pantone 2341 C */
+      color: #2d2d2d;
+    }
+
+    /* Header */
+    .header {
+      background: #B36B6B; /* Darker shade of 2341 C */
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-hexagon {
+      width: 50px;
+      height: 50px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hexagon {
+      width: 100%;
+      height: 100%;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: #C47B7B;
+      border: 3px solid #6DCDB8; /* Pantone 332 C */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bee-icon {
+      width: 60%;
+      height: 60%;
+      fill: white;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      background: #6DCDB8; /* Pantone 332 C */
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: #5EBDA8;
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #6DCDB8; /* Pantone 332 C */
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .stat-card h3 {
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #C47B7B; /* Pantone 2341 C */
+    }
+
+    /* Books Section */
+    .books-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.5rem;
+      color: #2d2d2d;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-header h2::before {
+      content: '';
+      width: 30px;
+      height: 30px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: #6DCDB8;
+    }
+
+    .search-add {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .search-box {
+      padding: 0.75rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      width: 300px;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: #6DCDB8; /* Pantone 332 C */
+    }
+
+    .btn-primary {
+      background: #6DCDB8; /* Pantone 332 C */
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background: #5EBDA8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(109, 205, 184, 0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #C47B7B; /* Pantone 2341 C */
+      border: 2px solid #C47B7B;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #C47B7B;
+      color: white;
+    }
+
+    /* Table */
+    .books-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .books-table thead {
+      background: #f5f5f5;
+      border-bottom: 2px solid #6DCDB8; /* Pantone 332 C */
+    }
+
+    .books-table th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #2d2d2d;
+    }
+
+    .books-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .books-table tbody tr:hover {
+      background: #fef9f9;
+    }
+
+    .book-cover {
+      width: 40px;
+      height: 60px;
+      border-radius: 4px;
+      object-fit: cover;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .placeholder-cover {
+      width: 40px;
+      height: 60px;
+      background: linear-gradient(135deg, #C47B7B 0%, #B36B6B 100%);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-complete {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status-pending {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .status-available {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .series-group {
+      background: #f8f8f8;
+      padding: 0.5rem 1rem;
+      border-left: 3px solid #6DCDB8;
+      font-weight: 600;
+      color: #C47B7B;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .series-group:hover {
+      background: #f0f0f0;
+    }
+
+    /* Action buttons in table */
+    .table-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: #6DCDB8;
+      cursor: pointer;
+      padding: 0.25rem;
+      transition: color 0.2s;
+    }
+
+    .icon-btn:hover {
+      color: #5EBDA8;
+    }
+
+    .icon-btn.danger {
+      color: #C47B7B;
+    }
+
+    .icon-btn.danger:hover {
+      color: #B36B6B;
+    }
+
+    /* Hexagon decorations */
+    .hex-decoration {
+      position: fixed;
+      opacity: 0.05;
+      width: 100px;
+      height: 100px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: #6DCDB8;
+      z-index: -1;
+    }
+
+    .hex-1 { top: 10%; left: 5%; transform: rotate(15deg); }
+    .hex-2 { top: 60%; right: 8%; transform: rotate(-20deg); width: 150px; height: 150px; }
+    .hex-3 { bottom: 15%; left: 15%; transform: rotate(30deg); width: 80px; height: 80px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-add {
+        flex-direction: column;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hexagon decorations -->
+  <div class="hex-decoration hex-1"></div>
+  <div class="hex-decoration hex-2"></div>
+  <div class="hex-decoration hex-3"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <div class="logo-hexagon">
+        <div class="hexagon">
+          <svg class="bee-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Simplified bee icon -->
+            <ellipse cx="50" cy="35" rx="12" ry="15" fill="white"/>
+            <ellipse cx="50" cy="55" rx="18" ry="25" fill="white"/>
+            <path d="M 25 45 Q 20 35 30 30 L 40 40" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M 75 45 Q 80 35 70 30 L 60 40" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <line x1="48" y1="20" x2="43" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <line x1="52" y1="20" x2="57" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <rect x="42" y="58" width="16" height="4" fill="#C47B7B" rx="2"/>
+            <rect x="42" y="66" width="16" height="4" fill="#C47B7B" rx="2"/>
+          </svg>
+        </div>
+      </div>
+      <h1>Library Management</h1>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle">🌙 Dark Mode</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Books</h3>
+        <div class="value">342</div>
+      </div>
+      <div class="stat-card">
+        <h3>Pending Enrichment</h3>
+        <div class="value">12</div>
+      </div>
+      <div class="stat-card">
+        <h3>Enriched Books</h3>
+        <div class="value">285</div>
+      </div>
+      <div class="stat-card">
+        <h3>Currently Loaned</h3>
+        <div class="value">23</div>
+      </div>
+    </div>
+
+    <!-- Books Section -->
+    <div class="books-section">
+      <div class="section-header">
+        <h2>Books</h2>
+        <div class="search-add">
+          <input type="text" class="search-box" placeholder="Search books...">
+          <button class="btn-primary">
+            <span>+</span> Add Book
+          </button>
+        </div>
+      </div>
+
+      <!-- Books Table -->
+      <table class="books-table">
+        <thead>
+          <tr>
+            <th>Cover</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Series</th>
+            <th>Status</th>
+            <th>Loan</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Series Group -->
+          <tr>
+            <td colspan="7" class="series-group">
+              ▼ The Expanse Series (9 books)
+            </td>
+          </tr>
+          <tr>
+            <td><div class="placeholder-cover">L</div></td>
+            <td>Leviathan Wakes</td>
+            <td>James S.A. Corey</td>
+            <td>The Expanse #1</td>
+            <td><span class="status-badge status-complete">Complete</span></td>
+            <td><span class="status-badge status-available">Available</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="icon-btn" title="Edit">✏️</button>
+                <button class="icon-btn" title="Enrich">🔍</button>
+                <button class="icon-btn danger" title="Delete">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="placeholder-cover">C</div></td>
+            <td>Caliban's War</td>
+            <td>James S.A. Corey</td>
+            <td>The Expanse #2</td>
+            <td><span class="status-badge status-complete">Complete</span></td>
+            <td><span class="status-badge status-available">Available</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="icon-btn" title="Edit">✏️</button>
+                <button class="icon-btn" title="Enrich">🔍</button>
+                <button class="icon-btn danger" title="Delete">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Regular Books -->
+          <tr>
+            <td><div class="placeholder-cover">P</div></td>
+            <td>Project Hail Mary</td>
+            <td>Andy Weir</td>
+            <td>-</td>
+            <td><span class="status-badge status-pending">Pending</span></td>
+            <td><span class="status-badge status-available">Available</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="icon-btn" title="Edit">✏️</button>
+                <button class="icon-btn" title="Enrich">🔍</button>
+                <button class="icon-btn danger" title="Delete">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="placeholder-cover">T</div></td>
+            <td>The Martian</td>
+            <td>Andy Weir</td>
+            <td>-</td>
+            <td><span class="status-badge status-complete">Complete</span></td>
+            <td><span class="status-badge status-available">Available</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="icon-btn" title="Edit">✏️</button>
+                <button class="icon-btn" title="Enrich">🔍</button>
+                <button class="icon-btn danger" title="Delete">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 2rem; text-align: center;">
+        <button class="btn-secondary">Load More</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

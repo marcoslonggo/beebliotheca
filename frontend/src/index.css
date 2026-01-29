@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 166 60% 71%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5% 64.9%;
+  }
+
+  body {
+    @apply m-0 font-inter bg-coal text-gray-50;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-honey text-coal font-medium rounded-lg hover:bg-honey/90 transition-colors;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-ember text-white font-medium rounded-lg hover:bg-ember/90 transition-colors;
+  }
+
+  .card {
+    @apply bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 shadow-soft-card;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-honey focus:border-transparent;
+  }
+}
+
+.barcode-scanner-region canvas {
+  display: none;
+}
+
+.cover-cropper {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.cover-cropper .ReactCrop__crop-selection {
+  border: 2px solid #f5c44d;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+}
+
+.cover-cropper .ReactCrop__drag-handle {
+  width: 24px;
+  height: 24px;
+}
