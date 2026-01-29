@@ -59,6 +59,12 @@ def create_app() -> FastAPI:
     covers_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/covers", StaticFiles(directory=str(covers_dir)), name="covers")
 
+    # Optionally serve frontend build assets (single-container deployments)
+    if settings.frontend_dist_dir:
+        frontend_dir = Path(settings.frontend_dist_dir)
+        if frontend_dir.exists():
+            app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+
     @app.get("/health", tags=["meta"])
     async def health_check() -> dict[str, str]:
         print("[HEALTH] Health check endpoint called!")

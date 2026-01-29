@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     metadata_retry_interval_seconds: int = 3600
     openlibrary_base_url: str = "https://openlibrary.org"
     google_books_base_url: str = "https://www.googleapis.com/books/v1/volumes"
+    frontend_dist_dir: str | None = None
 
 
 def get_settings() -> Settings:

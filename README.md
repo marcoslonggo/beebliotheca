@@ -9,8 +9,25 @@ Local-first web app for cataloging physical books with barcode scanning and meta
    docker compose --env-file .env.docker up --build
    ```
 3. Open:
-   - Frontend: http://localhost:8080
-   - Backend: http://localhost:8000
+   - App UI: http://localhost:8080
+   - API: http://localhost:8080/api
+
+## Docker Deployment Notes
+- The Docker setup uses a single container.
+- The frontend is built during image build and served by the FastAPI backend.
+- `docker-compose.yml` exposes port 8080 and mounts `backend/data/` for persistence.
+
+### Docker Hub (prebuilt image)
+```bash
+docker run -d \
+  -p 8080:8000 \
+  -e APP_SECRET_KEY=change-me \
+  -e APP_DATABASE_URL=sqlite+aiosqlite:///./data/books.db \
+  -e APP_FRONTEND_DIST_DIR=/app/frontend-dist \
+  -v $(pwd)/backend/data:/app/backend/data \
+  --name beebliotheca \
+  marcoslongo/beebliotheca:latest
+```
 
 ## Local Dev (no Docker)
 Backend:
